@@ -2,18 +2,11 @@ package com.example.simple_todo_app.controllers;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import com.example.simple_todo_app.models.ApiResponse;
 import com.example.simple_todo_app.models.TodoDTO;
 import com.example.simple_todo_app.services.TodoService;
 
@@ -21,48 +14,47 @@ import com.example.simple_todo_app.services.TodoService;
 @RequestMapping("api/v1/todos")
 public class TodoController {
 
-   
     private final TodoService todoService;
-    
+
     public TodoController(TodoService todoService) {
         this.todoService = todoService;
     }
 
-     @GetMapping("all")
-    public ResponseEntity<List<TodoDTO>> getAllTodos() {
-        return ResponseEntity.ok(todoService.getAllTodos());
+    @GetMapping("all")
+    public ResponseEntity<ApiResponse<List<TodoDTO>>> getAllTodos() {
+        List<TodoDTO> todos = todoService.getAllTodos();
+        return ResponseEntity.ok(new ApiResponse<>("All todos retrieved successfully", todos));
     }
 
     @PostMapping("/create")
-    public ResponseEntity<TodoDTO> createTodo(@RequestBody TodoDTO dto) {
-        return ResponseEntity.ok(todoService.createTodo(dto));
+    public ResponseEntity<ApiResponse<TodoDTO>> createTodo(@RequestBody TodoDTO dto) {
+        TodoDTO created = todoService.createTodo(dto);
+        return new ResponseEntity<>(new ApiResponse<>("Todo created successfully", created), HttpStatus.CREATED);
     }
-    
+
     @GetMapping("/{id}")
-    public ResponseEntity<TodoDTO> getTodoById(@PathVariable Long id) {
-        return ResponseEntity.ok(todoService.getTodoById(id));
+    public ResponseEntity<ApiResponse<TodoDTO>> getTodoById(@PathVariable Long id) {
+        TodoDTO todo = todoService.getTodoById(id);
+        return ResponseEntity.ok(new ApiResponse<>("Todo fetched successfully", todo));
     }
-    
-     @PutMapping("/{id}")
-     public ResponseEntity<TodoDTO> updateTodo(@PathVariable Long id, @RequestBody TodoDTO dto) {
-         return ResponseEntity.ok(todoService.updateTodo(id, dto));
-     }
-    
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<TodoDTO>> updateTodo(@PathVariable Long id, @RequestBody TodoDTO dto) {
+        TodoDTO updated = todoService.updateTodo(id, dto);
+        return ResponseEntity.ok(new ApiResponse<>("Todo updated successfully", updated));
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTodo(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteTodo(@PathVariable Long id) {
         todoService.deleteTodo(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new ApiResponse<>("Todo deleted successfully", null));
     }
 
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<TodoDTO> markCompleted(
+    public ResponseEntity<ApiResponse<TodoDTO>> markCompleted(
             @PathVariable Long id,
-            @RequestParam boolean completed
-    ) {
-        return ResponseEntity.ok(todoService.markTodoAsCompleted(id, completed));
+            @RequestParam boolean completed) {
+        TodoDTO updated = todoService.markTodoAsCompleted(id, completed);
+        return ResponseEntity.ok(new ApiResponse<>("Todo completion status updated", updated));
     }
-
-
-
-
 }
